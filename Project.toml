@@ -1,0 +1,13 @@
+name = "PolaronDoubleTimePIMC"
+uuid = "ae024362-f885-449c-9b77-5bc69ce4c2d6"
+authors = ["Jarvist Moore Frost"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.9"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
