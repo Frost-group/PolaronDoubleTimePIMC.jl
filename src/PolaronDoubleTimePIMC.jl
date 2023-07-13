@@ -7,6 +7,8 @@
 
 module PolaronDoubleTimePIMC
 
+using LinearAlgebra
+
 include("Constants.jl")
 include("Types.jl")
 
