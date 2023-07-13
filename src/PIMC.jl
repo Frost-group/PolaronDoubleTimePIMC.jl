@@ -18,15 +18,23 @@ current-current correlation function for a Holstein polaron system.
 function PIMC(;G::Real=0.5, ω0::Real=1.0, T::Real=2.0, m::Int=5, Q::Int=5, N::Int=5)
     β = 1/T    
 
-    # random electron positions for Im,Re,Im time slices
-    r= rand(1:N, m+Q+m+1) 
+    n= m + Q + Q # Re time... Im time... Im time ; Keldysh contour integral 
+    
+    r= rand(1:N, n) # random electron position (Int on 1:N) for each Im,Re,Im time slices
+    
+    Y=Vector{Vector{Float64}}(undef, n)
+    for i in 1:n
+        Y[i]=rand(N) # Phonon occupancy, for each of the position eigenbasis (N sites)
+    end
 
-    n= m + Q + m + 1 # size of phonon GF D matrix ?
     D= Complex{Float64}.(ω0^2*LinearAlgebra.I + zeros(n,n) , sqrt(ω0)/m * triu(ones(n,n),1))
-    println("D: $(D)")
+    println("Initial \n r: $(r), \n Y: $(Y), \n D: $(D)")
 
     w=real_time_weight(r,m,Q, N=N)
     println("Real time weight: $(w)")
+
+    w=real_time_weight(r,m,Q, Δt=im*0.1, N=N)
+    println("Imaginary time weight: $(w)")
 
     C_jj=0
     return C_jj
@@ -51,19 +59,17 @@ Equation (26) in Miladić and Vukmirović 2023.
 - `w::Float64`: Weight function value w(r)
 """
 function real_time_weight(r, m, Q; J=1, N=10, β=1, Δt=0.1)
-
     τ = β/m
-    t = Q*Δt
 
-    w = 1
+    w = ones(Complex{},1) 
     # Imaginary time slices before?
-    @inbounds for j = 1:m-1
+    @inbounds for j = 1:m
         w *= I(τ, r[j+1]-r[j]; J=J)
     end
 
     # I'm really confused about the indices in in the second and third product in (26)
     # Real time slices?
-    @inbounds for p = m:m+Q-1
+    @inbounds for p = m+1:m+Q
         w *= abs(I(-im*Δt, r[p+1]-r[p]; J=J))
     end
 
